@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light shadow-sm py-3 fixed-top bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">
+                <img src="img/logo.png" alt="Potion House Shop Logo" style="height: 100px;">
+                <strong>Potion House Shop</strong>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="products.html">Products</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="shopping-cart.html">
+                            <img src="img/path_to_cart_icon.png" alt="Cart" style="width: 1.5rem; height: 1.5rem;">
+                            <span id="cart-count" class="badge bg-danger">0</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Product Details -->
+    <section class="product-details my-5">
+        <div class="container">
+            <h2>Product Details</h2>
+            <div id="product-info" class="d-flex flex-column align-items-center">
+                <!-- Product Info will be dynamically inserted here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="social" class="social">
+        <div class="container text-center py-4">
+            <p class="text-white mb-4">Follow us on</p>
+            <div class="social-icons">
+                <a href="#" class="social-icon" target="_blank">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6c/Facebook_Logo_2023.png" alt="Facebook"
+                        class="img-fluid">
+                </a>
+                <a href="#" class="social-icon" target="_blank">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/9/95/Instagram_logo_2022.svg" alt="Instagram"
+                        class="img-fluid">
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Function to get URL parameter by name
+        function getURLParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // Example product data (you can fetch from a database or API)
+        const products = [
+            { id: "1", name: "Product 1", price: 100.00, description: "Description for Product 1", imageUrl: "img/product1.jpg" },
+            { id: "2", name: "Product 2", price: 200.00, description: "Description for Product 2", imageUrl: "img/product2.jpg" },
+            { id: "3", name: "Product 3", price: 300.00, description: "Description for Product 3", imageUrl: "img/product3.jpg" },
+            // Add more products as needed
+        ];
+
+        // Function to load product details
+        function loadProductDetails() {
+            const productId = getURLParameter("id");
+            const product = products.find(p => p.id === productId);
+
+            if (product) {
+                const productInfoContainer = document.getElementById("product-info");
+                productInfoContainer.innerHTML = `
+                    <img src="${product.imageUrl}" alt="${product.name}" class="img-fluid" style="max-width: 300px;">
+                    <h3>${product.name}</h3>
+                    <p><strong>Price:</strong> ฿${product.price.toFixed(2)}</p>
+                    <p><strong>Description:</strong> ${product.description}</p>
+                    <button class="btn btn-primary" onclick="addToCart('${product.name}', ${product.price}, '${product.id}')">Add to Cart</button>
+                `;
+            } else {
+                document.getElementById("product-info").innerHTML = "<p>Product not found.</p>";
+            }
+        }
+
+        // Add product to the cart
+        function addToCart(productName, price, productId) {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            cart.push({ name: productName, price: price, id: productId, selected: true });
+            localStorage.setItem('cart', JSON.stringify(cart));
+            alert('Product added to cart');
+        }
+
+        // Call the loadProductDetails function when the page loads
+        window.onload = loadProductDetails;
+    </script>
+
+    <!-- Link to external JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

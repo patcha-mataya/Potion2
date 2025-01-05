@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light shadow-sm py-3 fixed-top bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">
+                <img src="img/logo.png" alt="Potion House Shop Logo" style="height: 100px;">
+                <strong>Potion House Shop</strong>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item">
+                    <a class="nav-link" href="index.html">Home</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="products.html">Products</a></li>
+                <li class="nav-item">
+                    <a class="nav-link" href="shopping-cart.html">
+                        <img src="img/path_to_cart_icon.png" alt="Cart" style="width: 1.5rem; height: 1.5rem;">
+                        <span id="cart-count" class="badge bg-danger">0</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a id="login-btn" class="btn btn-primary text-white px-4 ms-3" href="login.html">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a id="logout-btn" class="btn btn-danger text-white px-4 ms-3" href="javascript:void(0);" style="display:none;" onclick="logout()">Logout</a>
+                </li>
+                <li class="nav-item">
+                    <a id="profile-btn" class="btn btn-primary text-white px-4 ms-3" href="profile.html" style="display:none;">Profile</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Shopping Cart -->
+    <section class="shopping-cart my-5">
+        <div class="container">
+            <h2>Your Shopping Cart</h2>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="select-all" onclick="toggleSelectAll()">
+                <label class="form-check-label" for="select-all">
+                    Select All
+                </label>
+            </div>
+
+            <div class="cart-items" id="cart-items">
+                <!-- Product items will be dynamically inserted here -->
+            </div>
+            
+            <div id="delete-selected-btn" style="display: none;" class="d-flex justify-content-between mt-3">
+                <button class="btn btn-danger" onclick="removeSelectedItems()">Delete Selected</button>
+            </div>
+
+            <hr>
+            <div class="d-flex justify-content-between">
+                <div class="total-price" style="font-size: 1.5rem; font-weight: bold;">
+                    Total: ฿<span id="total-price">0.00</span>
+                </div>
+                <a href="checkout.html" class="btn btn-primary">Proceed to Checkout</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="social" class="social">
+        <div class="container text-center py-4">
+            <p class="text-white mb-4">Follow us on</p>
+            <div class="social-icons">
+                <a href="#" class="social-icon" target="_blank">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6c/Facebook_Logo_2023.png" alt="Facebook"
+                        class="img-fluid">
+                </a>
+                <a href="#" class="social-icon" target="_blank">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/9/95/Instagram_logo_2022.svg" alt="Instagram"
+                        class="img-fluid">
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Check if cart exists in localStorage, if not create an empty cart
+        if (!localStorage.getItem('cart')) {
+            localStorage.setItem('cart', JSON.stringify([]));
+        }
+
+        // Function to update cart count in the navbar
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('cart'));
+            document.getElementById('cart-count').innerText = cart.length;
+        }
+
+        // Add product to the cart
+        function addToCart(productName, price, productId) {
+            const cart = JSON.parse(localStorage.getItem('cart'));
+            
+            // Check if the product is already in the cart
+            const existingProduct = cart.find(item => item.id === productId);
+            
+            if (existingProduct) {
+                existingProduct.quantity += 1;  // If the product is already in the cart, increase quantity
+            } else {
+                cart.push({ name: productName, price: price, id: productId, quantity: 1, selected: true });
+            }
+
+            localStorage.setItem('cart', JSON.stringify(cart));
+            
+            // Update cart count in the navbar
+            updateCartCount();
+        }
+
+        // Update quantity of the product
+        function updateQuantity(index, quantity) {
+            const cart = JSON.parse(localStorage.getItem('cart'));
+            if (quantity <= 0) {
+                cart.splice(index, 1);  // If quantity is less than or equal to 0, remove the item
+            } else {
+                cart[index].quantity = quantity;
+            }
+            localStorage.setItem('cart', JSON.stringify(cart));
+
+            // Update total price
+            updateTotalPrice();
+            displayCartItems();
+        }
+
+        // Toggle select product for checkout
+        function toggleSelect(index) {
+            const cart = JSON.parse(localStorage.getItem('cart'));
+            cart[index].selected = !cart[index].selected;
+            localStorage.setItem('cart', JSON.stringify(cart));
+
+            // Update total price
+            updateTotalPrice();
+            toggleDeleteButtonVisibility();
+        }
+
+        // Select or unselect all items
+        function toggleSelectAll() {
+            const cart = JSON.parse(localStorage.getItem('cart'));
+            const selectAllCheckbox = document.getElementById('select-all');
+            
+            cart.forEach(item => item.selected = selectAllCheckbox.checked);
+            localStorage.setItem('cart', JSON.stringify(cart));
+
+            // Update total price
+            updateTotalPrice();
+            displayCartItems();
+        }
+
+        // Remove selected items
+        function removeSelectedItems() {
+            const cart = JSON.parse(localStorage.getItem('cart'));
+            const updatedCart = cart.filter(item => !item.selected);
+            localStorage.setItem('cart', JSON.stringify(updatedCart));
+
+            // Update total price
+            updateTotalPrice();
+            displayCartItems();
+        }
+
+        // Display cart items in the shopping cart page
+        function displayCartItems() {
+            const cart = JSON.parse(localStorage.getItem('cart'));
+            const cartItemsContainer = document.getElementById('cart-items');
+            let totalPrice = 0;
+
+            cartItemsContainer.innerHTML = ''; // Clear the cart items container
+
+            cart.forEach((item, index) => {
+                const itemElement = document.createElement('div');
+                itemElement.classList.add('cart-item', 'd-flex', 'justify-content-between', 'align-items-center');
+                itemElement.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <div>
+                            <a href="product-details.html?id=${item.id}" class="text-decoration-none">
+                                ${item.name} - ฿${item.price.toFixed(2)} x ${item.quantity}
+                            </a>
+                            <div class="d-flex align-items-center mt-2">
+                                <button class="btn btn-sm btn-secondary" onclick="updateQuantity(${index}, ${item.quantity - 1})">-</button>
+                                <span class="mx-2">${item.quantity}</span>
+                                <button class="btn btn-sm btn-secondary" onclick="updateQuantity(${index}, ${item.quantity + 1})">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <input type="checkbox" class="form-check-input" ${item.selected ? 'checked' : ''} onclick="toggleSelect(${index})">
+                    </div>
+                `;
+                cartItemsContainer.appendChild(itemElement);
+
+                // Add to total price if selected
+                if (item.selected) {
+                    totalPrice += item.price * item.quantity;
+                }
+            });
+
+            // Update total price
+            document.getElementById('total-price').innerText = totalPrice.toFixed(2);
+
+            // Toggle "Delete Selected" button visibility
+            toggleDeleteButtonVisibility();
+        }
+
+        // Update the total price of selected items
+        function updateTotalPrice() {
+            const cart = JSON.parse(localStorage.getItem('cart'));
+            let totalPrice = 0;
+
+            cart.forEach(item => {
+                if (item.selected) {
+                    totalPrice += item.price * item.quantity;
+                }
+            });
+
+            document.getElementById('total-price').innerText = totalPrice.toFixed(2);
+        }
+
+        // Toggle "Delete Selected" button visibility based on selections
+        function toggleDeleteButtonVisibility() {
+            const cart = JSON.parse(localStorage.getItem('cart'));
+            const deleteBtn = document.getElementById('delete-selected-btn');
+            const anySelected = cart.some(item => item.selected);
+
+            deleteBtn.style.display = anySelected ? 'block' : 'none';
+        }
+
+        // Call updateCartCount() to set the initial cart count
+        updateCartCount();
+
+        // Call displayCartItems() to show the cart items on page load
+        window.onload = function() {
+            if (document.getElementById('cart-items')) {
+                displayCartItems();
+            }
+        };
+    </script>
+
+    <!-- Link to external JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

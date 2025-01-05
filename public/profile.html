@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>User Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css\styles.css">
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light shadow-sm py-3 fixed-top bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">
+                <img src="img/logo.png" alt="IHMGPUSHOP Logo" style="height: 55px;">
+                <strong>IHMGPUSHOP</strong>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <form class="d-flex search-bar w-50 me-4" onsubmit="searchProducts(event)">
+                    <input type="text" class="form-control me-2" id="search-query" placeholder="Search...">
+                    <button class="btn btn-light" type="submit">Search</button>
+                </form>
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <!-- Add Product button -->
+                    <li class="nav-item">
+                        <a class="btn btn-success text-white px-4 ms-3" href="addproduct.html">Add Product</a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="shopping-cart.html">Cart</a></li>
+                    <li class="nav-item">
+                        <a id="login-btn" class="btn btn-primary text-white px-4 ms-3" href="login.html"
+                            style="display:none;">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a id="logout-btn" class="btn btn-danger text-white px-4 ms-3" href="javascript:void(0);"
+                            style="display:none;" onclick="logout()">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- User Profile Section -->
+    <section class="profile-section my-5">
+        <div class="container">
+            <h2>User Profile</h2>
+            <div id="user-details" class="mt-4">
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="social" class="social">
+        <div class="container text-center py-4">
+            <p class="text-white mb-4">Follow us on</p>
+            <div class="social-icons">
+                <a href="#" class="social-icon" target="_blank">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6c/Facebook_Logo_2023.png" alt="Facebook"
+                        class="img-fluid">
+                </a>
+                <a href="#" class="social-icon" target="_blank">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/9/95/Instagram_logo_2022.svg"
+                        alt="Instagram" class="img-fluid">
+                </a>
+                <a href="#" class="social-icon" target="_blank">
+                    <img src="https://content.linkedin.com/content/dam/me/business/en-us/amp/brand-site/v2/bg/LI-Bug.svg.original.svg"
+                        alt="LinkedIn" class="img-fluid">
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Function to check if user is logged in and hide/show buttons accordingly
+        function checkLoginStatus() {
+            const token = localStorage.getItem('token'); // Get the token from local storage
+
+            // If token exists, hide login button and show logout button
+            if (token) {
+                document.getElementById('login-btn').style.display = 'none'; // Hide login button
+                document.getElementById('logout-btn').style.display = 'inline-block'; // Show logout button
+            } else {
+                document.getElementById('login-btn').style.display = 'inline-block'; // Show login button
+                document.getElementById('logout-btn').style.display = 'none'; // Hide logout button
+            }
+        }
+
+        // Call the function to check login status when the page loads
+        window.onload = function () {
+            checkLoginStatus();
+            getUserProfile(); // Call your function to fetch and display user profile
+        };
+
+        // Function to logout the user
+        function logout() {
+            localStorage.removeItem('token'); // Remove token from localStorage
+            alert('You have been logged out.');
+            window.location.href = 'index.html'; // Redirect to homepage or login page
+        }
+
+        // Function to get user data and display it
+        async function getUserProfile() {
+            const token = localStorage.getItem('token'); // Get the token from local storage
+            if (!token) {
+                alert('You are not logged in!');
+                window.location.href = 'login.html'; // Redirect to login page if no token
+                return;
+            }
+
+            // Send GET request to fetch user data
+            try {
+                const response = await fetch('/user', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}` // Send token in Authorization header
+                    }
+                });
+
+                if (response.ok) {
+                    const user = await response.json(); // Parse the user data from response
+                    displayUserProfile(user); // Call function to display user data
+                } else {
+                    const error = await response.json();
+                    alert(error.message || 'Failed to fetch user data');
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+                alert('Error fetching user data');
+            }
+        }
+
+        // Function to display user profile details
+        function displayUserProfile(user) {
+            const userDetailsElement = document.getElementById('user-details');
+            userDetailsElement.innerHTML = `
+        <p><strong>Username:</strong> ${user.username}</p>
+        <p><strong>Email:</strong> ${user.email}</p>
+        <!-- Add more user details here if needed -->
+      `;
+        }
+    </script>
+
+
+</body>
+
+</html>
